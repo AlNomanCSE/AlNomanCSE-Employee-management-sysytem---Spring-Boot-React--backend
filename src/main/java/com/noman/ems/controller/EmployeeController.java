@@ -1,6 +1,7 @@
 package com.noman.ems.controller;
 
 import com.noman.ems.dto.EmployeeDto;
+import com.noman.ems.exception.ResourceNotFoundException;
 import com.noman.ems.service.EmployeeService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin("*")
 @Slf4j
 @RestController
 @RequestMapping("/api/employees")
@@ -18,10 +19,15 @@ public class EmployeeController {
 
     private EmployeeService employeeService;
 
+
     @PostMapping
-    public ResponseEntity<EmployeeDto> createEmployee(@RequestBody EmployeeDto employeeDto) {
-        EmployeeDto employee = employeeService.createEmployee(employeeDto);
-        return new ResponseEntity<>(employee, HttpStatus.CREATED);
+    public ResponseEntity<?> createEmployee(@RequestBody EmployeeDto employeeDto) {
+        try {
+            EmployeeDto employee = employeeService.createEmployee(employeeDto);
+            return new ResponseEntity<>(employee, HttpStatus.CREATED);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(e.getErrors(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("{id}")

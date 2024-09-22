@@ -9,7 +9,10 @@ import com.noman.ems.service.EmployeeService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,10 +23,39 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
+        Map<String, String> errors = validateEmployeeDto(employeeDto);
+        if (!errors.isEmpty()) {
+            throw new ResourceNotFoundException(errors);
+        }
         Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
         Employee save = employeeRepository.save(employee);
 
         return EmployeeMapper.mapToEmployeeDto(save);
+    }
+    private Map<String, String> validateEmployeeDto(EmployeeDto employeeDto) {
+        Map<String, String> errors = new HashMap<>();
+
+        if (employeeDto.getFirstName() == null || employeeDto.getFirstName().trim().isEmpty()) {
+            errors.put("firstName", "First name is required");
+        }
+
+        if (employeeDto.getLastName() == null || employeeDto.getLastName().trim().isEmpty()) {
+            errors.put("lastName", "Last name is required");
+        }
+
+        if (employeeDto.getEmail() == null || employeeDto.getEmail().trim().isEmpty()) {
+            errors.put("email", "Email is required");
+        } else if (!isValidEmail(employeeDto.getEmail())) {
+            errors.put("email", "Invalid email format");
+        }
+
+        return errors;
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        return pattern.matcher(email).matches();
     }
 
     @Override
