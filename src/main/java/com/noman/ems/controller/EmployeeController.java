@@ -4,14 +4,13 @@ import com.noman.ems.dto.EmployeeDto;
 import com.noman.ems.exception.ResourceNotFoundException;
 import com.noman.ems.service.EmployeeService;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @CrossOrigin("*")
-@Slf4j
 @RestController
 @RequestMapping("/api/employees")
 @AllArgsConstructor
@@ -35,6 +34,7 @@ public class EmployeeController {
         EmployeeDto employee = employeeService.getEmployeeById(id);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
+
     @GetMapping
     public ResponseEntity<List<EmployeeDto>> getEmployees() {
         List<EmployeeDto> allEmployees = employeeService.getAllEmployees();
