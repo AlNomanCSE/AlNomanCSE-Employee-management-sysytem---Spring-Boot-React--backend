@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class DepartmentServiceImpl implements DepartmentService {
 
+
     private DepartmentRepository departmentRepository;
 
     @Override
@@ -51,7 +52,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         return errors;
     }
 
-
     @Override
     public List<DepartmentDto> getAllDepartments() {
         List<Department> departments = departmentRepository.findAll();
@@ -59,5 +59,33 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .stream()
                 .map(DepartmentMapper::mapToDepartmentDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public DepartmentDto getDepartmentById(Long id) {
+        Department department = departmentRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("\uD83D\uDFE5Department not found with the given ID : " + id));
+        return DepartmentMapper.mapToDepartmentDto(department);
+    }
+
+    @Override
+    public DepartmentDto updateDepartmentById(Long id, DepartmentDto departmentDto) {
+        Department department = departmentRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("\uD83D\uDFE5Department not found with the given ID : " + id));
+        department.setDepartmentName(departmentDto.getDepartmentName());
+        department.setDepartmentDescription(departmentDto.getDepartmentDescription());
+        departmentRepository.save(department);
+        return DepartmentMapper.mapToDepartmentDto(department);
+    }
+
+
+    @Override
+    public void deleteDepartmentById(Long id) {
+        Department department = departmentRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("\uD83D\uDFE5Department not found with the given ID : " + id));
+        departmentRepository.delete(department);
     }
 }
