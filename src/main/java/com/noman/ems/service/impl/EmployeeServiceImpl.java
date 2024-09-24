@@ -1,9 +1,11 @@
 package com.noman.ems.service.impl;
 
 import com.noman.ems.dto.EmployeeDto;
+import com.noman.ems.entity.Department;
 import com.noman.ems.entity.Employee;
 import com.noman.ems.exception.ResourceNotFoundException;
 import com.noman.ems.mapper.EmployeeMapper;
+import com.noman.ems.repository.DepartmentRepository;
 import com.noman.ems.repository.EmployeeRepository;
 import com.noman.ems.service.EmployeeService;
 import lombok.AllArgsConstructor;
@@ -20,18 +22,25 @@ import java.util.stream.Collectors;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private EmployeeRepository employeeRepository;
+    private DepartmentRepository departmentRepository;
 
     @Override
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
+
         Map<String, String> errors = validateEmployeeDto(employeeDto);
         if (!errors.isEmpty()) {
             throw new ResourceNotFoundException(errors);
         }
         Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
+        Department department = departmentRepository
+                .findById(employeeDto.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("\uD83D\uDFE5 Department is not exist with the given id : " + employeeDto.getDepartmentId()));
+        employee.setDepartment(department);
         Employee save = employeeRepository.save(employee);
 
         return EmployeeMapper.mapToEmployeeDto(save);
     }
+
     private Map<String, String> validateEmployeeDto(EmployeeDto employeeDto) {
         Map<String, String> errors = new HashMap<>();
 
@@ -80,12 +89,16 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeDto updateEmployeeById(Long id, EmployeeDto employeeDto) {
-        Employee employee= employeeRepository
+        Employee employee = employeeRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("\uD83D\uDFE5 Employee is not exist with the given id : " + id));
         employee.setFirstName(employeeDto.getFirstName());
         employee.setLastName(employeeDto.getLastName());
         employee.setEmail(employeeDto.getEmail());
+        Department department = departmentRepository
+                .findById(employeeDto.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("\uD83D\uDFE5 Department is not exist with the given id : " + employeeDto.getDepartmentId()));
+        employee.setDepartment(department);
         Employee update = employeeRepository.save(employee);
         return EmployeeMapper.mapToEmployeeDto(update);
     }
